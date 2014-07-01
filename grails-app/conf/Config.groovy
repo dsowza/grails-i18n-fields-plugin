@@ -3,7 +3,25 @@ grails.views.gsp.encoding="UTF-8"
 
 // Uncomment and edit the following lines to start using Grails encoding & escaping improvements
 
-/* remove this line 
+log4j = {
+    // Example of changing the log pattern for the default console
+    // appender:
+    appenders {
+        console name: 'stdout', layout: pattern(conversionPattern: '%d{yyyy-MM-dd/HH:mm:ss.SSS} [%t] %x %-5p %c{2} - %m%n')
+    }
+
+    root {
+        warn()
+    }
+
+    environments {
+        test {
+            info 'stdout': ['grails.app', 'i18nfields','I18nFieldsGrailsPlugin']
+        }
+    }
+}
+
+/* remove this line
 // GSP settings
 grails {
     views {

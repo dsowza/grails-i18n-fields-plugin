@@ -1,5 +1,6 @@
 import org.codehaus.groovy.grails.commons.*
-import org.apache.log4j.Logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import i18nfields.*
 import grails.util.GrailsUtil
@@ -7,7 +8,7 @@ import org.codehaus.groovy.grails.orm.hibernate.HibernateEventListeners
 import org.hibernate.event.PostInsertEvent
 
 class I18nFieldsGrailsPlugin {
-    static final def log = Logger.getLogger(I18nFieldsGrailsPlugin)
+    static final Logger log = LoggerFactory.getLogger(this)
 
     def version = "0.9-redis-SNAPSHOT"
     def grailsVersion = "2.1.0 > *"
@@ -38,20 +39,20 @@ class I18nFieldsGrailsPlugin {
 
     def grailsApplication
     def setApplication(app) {
-        println "[i18nFields] Grails Application injected"
+        log.info "Grails Application injected"
         grailsApplication = app
     }
 
     def doWithDynamicMethods = { context ->
-        println "[i18nFields] Plugin version: ${version}"
+        log.info "Plugin version: $version"
         ['domain', 'controller', 'service', 'bootstrap'].each {
-            println "[i18nFields] Adding 'withLocale' method to '${it}' classes"
+            log.info "Adding 'withLocale' method to '${it}' classes"
             application."${it}Classes".each { theClass ->
                 theClass.metaClass.withLocale = I18nFieldsHelper.withLocale
             }
         }
         ['domain'].each {
-            println "[i18nFields] Adding saveLocale method to ${it} classes"
+            log.info "Adding saveLocale method to ${it} classes"
             application."${it}Classes".each { theClass ->
                 theClass.metaClass.saveLocale = I18nFieldsHelper.saveLocale
             }
