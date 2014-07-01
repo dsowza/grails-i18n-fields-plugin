@@ -9,7 +9,6 @@ class Ego {
 	static i18nFields = ["name", "alias"]
 
 	static constraints = {
-		karma(nullable: true)
 		alias(nullable: true)
 	}
 }
