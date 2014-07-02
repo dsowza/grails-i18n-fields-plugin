@@ -18,3 +18,4 @@ stacktrace.log
 
 test/projects/*/target
 
+.classpath
