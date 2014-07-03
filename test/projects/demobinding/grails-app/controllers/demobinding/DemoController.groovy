@@ -1,6 +1,7 @@
 package demobinding
 
 import org.springframework.dao.DataIntegrityViolationException
+import grails.converters.JSON
 
 class DemoController {
 
@@ -11,8 +12,7 @@ class DemoController {
     }
 
     def list(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
-        [demoInstanceList: Demo.list(params), demoInstanceTotal: Demo.count()]
+        render(text: Demo.list(params) as JSON)
     }
 
     def create() {

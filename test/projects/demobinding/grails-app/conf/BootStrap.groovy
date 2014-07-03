@@ -2,23 +2,38 @@ class BootStrap {
 
     def init = { servletContext ->
         // Agregamos un dato demo
-        def demo = new demobinding.Demo()
-        demo.name_es_ES = "Español"
-        demo.name_fr_FR = "Frances"
-        demo.name_en_US = "Ingles"
-        demo.demoDescription_es_ES = "una descripción..."
+        def spanish = new demobinding.Demo(code: 'es')
+        spanish.name_es_ES = "Español"
+        spanish.name_fr_FR = "Espagnol"
+        spanish.name_en_US = "Spanish"
+        spanish.description_es_ES = "Idioma español"
+        spanish.description_fr_FR = "Lange espagnol"
+        spanish.description_en_US = "Spanish language"
+        spanish.longDescription_es_ES = "Una descripción de Español..."
+        spanish.save(failOnError: true)
 
-        demo.field1_es_ES = "Español1"
-        demo.field1_fr_FR = "Frances1"
-        demo.field1_en_US = "Ingles1"
-        
-        demo.field2_es_ES = "Español2"
-        demo.field2_fr_FR = "Frances2"
-        demo.field2_en_US = "Ingles2"
-        
-        demo.save(failOnError: true)
+        def french = new demobinding.Demo(code: 'fr')
+        french.name_es_ES = "Francés"
+        french.name_fr_FR = "Français"
+        french.name_en_US = "French"
+        french.description_es_ES = "Idioma francés"
+        french.description_fr_FR = "Lange français"
+        french.description_en_US = "French language"
+        french.longDescription_es_ES = "Une description en français..."
+        french.save(failOnError: true)
+
+        def english = new demobinding.Demo(code: 'en')
+        english.name_es_ES = "Inglés"
+        english.name_fr_FR = "Anglais"
+        english.name_en_US = "English"
+        english.description_es_ES = "Idioma inglés"
+        english.description_fr_FR = "Lange anglais"
+        english.description_en_US = "English language"
+        english.longDescription_es_ES = "A description in english..."
+        english.save(failOnError: true)
+
     }
-    
+
     def destroy = {
     }
 }
