@@ -326,7 +326,7 @@ class ClassI18nalizator {
     private addPropertyGetter(field, locale) {
         String methodName = GrailsClassUtils.getGetterName("${field}_${locale}")
         def code = new AstBuilder().buildFromString("""
-            i18nfields.I18nFieldsHelper.getValueOrDefault(this, '${field}')
+            i18nfields.I18nFieldsHelper.getValueOrDefault(this, "$field", "$locale")
         """).pop()
 
         def methodNode = new MethodNode(
@@ -369,7 +369,7 @@ class ClassI18nalizator {
     private addProxyGetter(field) {
         String methodName = GrailsClassUtils.getGetterName(field);
         def code = new AstBuilder().buildFromString("""
-            i18nfields.I18nFieldsHelper.getValueOrDefault(this, '${field}')
+            i18nfields.I18nFieldsHelper.getValueOrDefault(this, "$field")
         """).pop();
 
         def methodNode = new MethodNode(
@@ -387,7 +387,7 @@ class ClassI18nalizator {
     private addLocalizedGetter(field) {
         def methodName = GrailsClassUtils.getGetterName(field)
         def code = new AstBuilder().buildFromString("""
-            i18nfields.I18nFieldsHelper.getValueOrDefault(this, '${field}', locale)
+            i18nfields.I18nFieldsHelper.getValueOrDefault(this, "$field", locale)
         """).pop();
 
         def parameters = [new Parameter(ClassHelper.make(Locale, false), "locale")] as Parameter[]
@@ -407,7 +407,7 @@ class ClassI18nalizator {
     private addLocalizedGetterEmpty(field) {
         def methodName = GrailsClassUtils.getGetterName(field) + "OrEmpty"
         def code = new AstBuilder().buildFromString("""
-            i18nfields.I18nFieldsHelper.getValueOrEmpty(this, '${field}', locale)
+            i18nfields.I18nFieldsHelper.getValueOrEmpty(this, "$field", locale)
         """).pop();
 
         def parameters = [new Parameter(ClassHelper.make(Locale, false), "locale")] as Parameter[]
