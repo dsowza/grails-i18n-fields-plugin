@@ -8,11 +8,11 @@ class DemoController {
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
 
     def index() {
-        redirect(action: "list", params: params)
-    }
+        def items = Demo.list(params)
+        def fields = ['code', 'name', 'name_es_ES', 'name_en_US', 'name_fr_FR', 'description', 'longDescription']
 
-    def list(Integer max) {
-        render(text: Demo.list(params) as JSON)
+        def rows = items.collect { fields.collect { f -> it."$f" }.join(',') }
+        render(text: ([fields.join(',')] + rows).join("\n<br>\n"))
     }
 
     def create() {
