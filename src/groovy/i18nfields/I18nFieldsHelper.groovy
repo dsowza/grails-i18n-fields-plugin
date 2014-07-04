@@ -13,11 +13,18 @@ class I18nFieldsHelper implements Serializable {
 	}
 
     /**
+     * Returns plugin config
+     */
+    static def getConfig() {
+        getSpringBean("grailsApplication").config[I18nFields.I18N_FIELDS]
+    }
+
+    /**
      * Gets current locale
      */
 	static getLocale() {
 	    def locale = LocaleContextHolder.getLocale()
-	    if(!locale || locale.toString() == "") locale = new Locale(getSpringBean("grailsApplication").config[I18nFields.I18N_FIELDS][I18nFields.DEFAULT_LOCALE])
+	    if(!locale || locale.toString() == "") locale = new Locale(config[I18nFields.DEFAULT_LOCALE])
         return locale 
 	}
 	
@@ -32,7 +39,7 @@ class I18nFieldsHelper implements Serializable {
      * Gets the locale to be used instead of given locale
      */
 	static getSupportedLocale( locale ) {
-		def locales = getSpringBean("grailsApplication").config[I18nFields.I18N_FIELDS][I18nFields.LOCALES]
+		def locales = config[I18nFields.LOCALES]
 		
 	    if (!locales.contains(locale.toString())) {
             def lang = locale.toString().split("_")[0]
@@ -88,9 +95,8 @@ class I18nFieldsHelper implements Serializable {
     static String getValueOrDefault( object, field, locale ) {
 	    def result = getValueOrEmpty(object, field, locale)
 	    if(!result) {
-			def grailsApplication = getSpringBean("grailsApplication")
-			def default_locale = grailsApplication.config[I18nFields.I18N_FIELDS][I18nFields.DEFAULT_LOCALE]
-	        result = getValueOrEmpty(object, field, default_locale)
+			def defaultLocale = config[I18nFields.DEFAULT_LOCALE]
+	        result = getValueOrEmpty(object, field, defaultLocale)
 	    }
 	    
 	    return result
@@ -114,7 +120,7 @@ class I18nFieldsHelper implements Serializable {
         locale = locale.toString() // we need the locale as a string
         locale = getSupportedLocale(locale) // use a near locale if locale do not exists.
         
-        def isRedisLocale =  getSpringBean("grailsApplication").config[I18nFields.I18N_FIELDS][I18nFields.REDIS_LOCALES].contains(locale)
+        def isRedisLocale =  config[I18nFields.REDIS_LOCALES].contains(locale)
         if(!isRedisLocale) return object.@"${field}_${locale}"
         
         try {
@@ -137,7 +143,7 @@ class I18nFieldsHelper implements Serializable {
 	 */
 	static void setValue(object, field, locale, value) {
 		assert object != null, "object to retrieve value should never be null"
-		def isRedisLocale =  getSpringBean("grailsApplication").config[I18nFields.I18N_FIELDS][I18nFields.REDIS_LOCALES].contains(locale)
+		def isRedisLocale =  config[I18nFields.REDIS_LOCALES].contains(locale)
 
 		// Mark the locale as dirty
 		if(!object[I18nFields.DATA].dirty) object[I18nFields.DATA].dirty = [] as Set
@@ -198,7 +204,7 @@ class I18nFieldsHelper implements Serializable {
 	 * Save in redis all the locales
 	 */
 	static def pushAll(object) {
-		def locales = getSpringBean("grailsApplication").config[I18nFields.I18N_FIELDS][I18nFields.LOCALES]
+		def locales = config[I18nFields.LOCALES]
 	    locales.each { locale ->
 	        push(object, locale)
 	    }
@@ -212,7 +218,7 @@ class I18nFieldsHelper implements Serializable {
 	    def objectId =  object.id
 	    def className = object.class.simpleName.toLowerCase()
 
-	    def locales = getSpringBean("grailsApplication").config[I18nFields.I18N_FIELDS][I18nFields.LOCALES]
+	    def locales = config[I18nFields.LOCALES]
 	    locales.each { locale ->
     	    String keyName = "${locale}:${className}:${objectId}"
     	    RedisHolder.instance.del(keyName)
