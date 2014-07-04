@@ -245,10 +245,9 @@ class ClassI18nalizator {
         addPropertySetter(name, locale)
     }
 
-    private def buildSetterMethod(field) {
-        // setter should return void. that's why the return statement.
+    private def buildSetterMethod(field, locale) {
         astBuilder.buildFromString("""
-          i18nfields.I18nFieldsHelper.setValue(this, '${field}', value)
+          i18nfields.I18nFieldsHelper.setValue(this, "$field", "$locale", value)
           return
         """).pop()
     }
@@ -349,7 +348,7 @@ class ClassI18nalizator {
             ClassHelper.VOID_TYPE,
             [new Parameter(ClassHelper.STRING_TYPE, "value")] as Parameter[],
             ClassHelper.EMPTY_TYPE_ARRAY,
-            buildSetterMethod(methodName)
+            buildSetterMethod(field, locale)
         );
         classNode.addMethod(methodNode)
     }
