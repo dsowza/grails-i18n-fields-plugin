@@ -12,8 +12,20 @@ class DemoController {
         def fields = ['code', 'name', 'name_es_ES', 'name_en_US', 'name_fr_FR', 'description', 'longDescription']
 
         def rows = items.collect { fields.collect { f -> it."$f" }.join(',') }
-        render(text: ([fields.join(',')] + rows).join("\n<br>\n"))
+        render(text: rows as JSON)
     }
+
+    def showCode(String id) {
+        def item = Demo.findByCode(id)
+        render(text: item.name)
+    }
+
+    def showCodeByLang(String id) {
+        def item = Demo.findByCode(id)
+        def fieldLang = params.fieldLang
+        render(text: item."getName_$fieldLang"())
+    }
+
 
     def create() {
         [demoInstance: new Demo(params)]
