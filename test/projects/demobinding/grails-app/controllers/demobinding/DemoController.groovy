@@ -1,19 +1,31 @@
 package demobinding
 
 import org.springframework.dao.DataIntegrityViolationException
+import grails.converters.JSON
 
 class DemoController {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
 
     def index() {
-        redirect(action: "list", params: params)
+        def items = Demo.list(params)
+        def fields = ['code', 'name', 'name_es_ES', 'name_en_US', 'name_fr_FR', 'description', 'longDescription']
+
+        def rows = items.collect { fields.collect { f -> it."$f" }.join(',') }
+        render(text: rows as JSON)
     }
 
-    def list(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
-        [demoInstanceList: Demo.list(params), demoInstanceTotal: Demo.count()]
+    def showCode(String id) {
+        def item = Demo.findByCode(id)
+        render(text: item.name)
     }
+
+    def showCodeByLang(String id) {
+        def item = Demo.findByCode(id)
+        def fieldLang = params.fieldLang
+        render(text: item."getName_$fieldLang"())
+    }
+
 
     def create() {
         [demoInstance: new Demo(params)]
