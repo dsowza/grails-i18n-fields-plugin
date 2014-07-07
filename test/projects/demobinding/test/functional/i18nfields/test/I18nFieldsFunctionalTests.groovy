@@ -36,6 +36,9 @@ class I18nFieldsFunctionalTests extends FunctionalTestCase {
         }
     }
 
-
+    void testFailUnknownTranslations() {
+        get "/demo/showCode/es?lang=de_DE"
+        assertStatus 500
+    }
 
 }
