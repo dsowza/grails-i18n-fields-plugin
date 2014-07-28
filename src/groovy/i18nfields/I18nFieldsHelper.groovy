@@ -165,11 +165,19 @@ class I18nFieldsHelper implements Serializable {
         def dirties = object[I18nFields.DATA].dirty
         if(! (locale.toString() in dirties) ) {
             log.debug "Not pushing ${locale} because it is not dirty. (${object[I18nFields.DATA].dirty*.class?.name})"
-            return;
+            return
+        }
+
+        if (config.readOnly) {
+            log.debug "Config set to readOnly. Skipping push."
+            return
         }
 
         // get redis key to persist.
         def objectId =  object.id
+        if (!objectId) {
+            return
+        }
         def className = object.class.simpleName.toLowerCase()
         String keyName = "${locale}:${className}:${objectId}"
         log.debug "Pushing locale ${locale} to Redis (${keyName})"
@@ -179,7 +187,7 @@ class I18nFieldsHelper implements Serializable {
         object[I18nFields.I18N_FIELDS].each { key ->
             def value = object.@"${key}_${locale}"
             if (value != null)
-                if(object.hasProperty(I18nFields.I18N_FIELDS_RENAME))
+                if (object.hasProperty(I18nFields.I18N_FIELDS_RENAME))
                     values[object[I18nFields.I18N_FIELDS_RENAME][key]?:key] = value
                 else
                     values[key] = value

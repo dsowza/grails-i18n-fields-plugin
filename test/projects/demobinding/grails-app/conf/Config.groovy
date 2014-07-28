@@ -106,6 +106,10 @@ i18nFields {
     // if true, the contraints are copied. If false no constraints are copied.
     // Default: true
     enforceConstraintsOnRedisLocales = false
+
+    // Sets translation in read-only mode
+    // Default: false
+    readOnly = false
     
     // Config to access to redis.
     redisConfig {
