@@ -203,7 +203,8 @@ class I18nFieldsHelper implements Serializable {
 //                if(object.version && dirties == [] as Set)  object.version--
             }
             catch(Exception e) {
-                log.error("Can not write in REDIS ! But it was already saved on mysql. Redis Locales were lost.", e);
+                log.error("Can not write in REDIS ! But it was already saved on mysql. Redis Locales were lost.", e)
+                e.printStackTrace()
             }
         }
     }
