@@ -21,6 +21,8 @@ class RedisHolder {
      * @return
      */
     public static Jedis getInstance() {
+        /* TODO! This fixes weird bug that blocks app when RedisOutputStream buffer is full */
+        redisInstance = null
         if (!redisInstance) {
             def config = getConfiguration()
 
