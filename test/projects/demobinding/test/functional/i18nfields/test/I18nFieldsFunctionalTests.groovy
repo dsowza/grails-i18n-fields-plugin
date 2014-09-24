@@ -41,4 +41,15 @@ class I18nFieldsFunctionalTests extends FunctionalTestCase {
         assertStatus 500
     }
 
+    void testRedisLoad() {
+        for (i in 0..400) {
+            Thread.start {
+                for (j in 0..100) {
+                    get "/demo/showCodeByLang/fr?lang=en_US&fieldLang=es_ES"
+                    assertStatus 200
+                }
+            }
+        }
+    }
+
 }
