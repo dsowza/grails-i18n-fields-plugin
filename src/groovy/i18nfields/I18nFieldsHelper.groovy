@@ -196,7 +196,9 @@ class I18nFieldsHelper implements Serializable {
         // If there is something to save... do it.
         if (values) {
             try {
-                RedisHolder.instance.hmset(keyName, values)
+                RedisHolder.withJedis { jedis ->
+                    jedis.hmset(keyName, values)
+                }
 
                 // If the pushed locale were the last dirty locale, remove the dirty object state
                 dirties = dirties - locale.toString()
@@ -230,7 +232,9 @@ class I18nFieldsHelper implements Serializable {
         def locales = config[I18nFields.LOCALES]
         locales.each { locale ->
             String keyName = "${locale}:${className}:${objectId}"
-            RedisHolder.instance.del(keyName)
+            RedisHolder.withJedis { jedis ->
+                jedis.del(keyName)
+            }
         }
     }
 
@@ -246,10 +250,13 @@ class I18nFieldsHelper implements Serializable {
         def className = object.class.simpleName.toLowerCase()
 
         def keyName = "${locale}:${className}:${objectId}"
-        def result = RedisHolder.instance.hgetAll(keyName);
+        def result
+        RedisHolder.withJedis { jedis ->
+            result = jedis.hgetAll(keyName)
+        }
 
         log.debug "Fetching from redis ${keyName} values ${result}"
-        return result;
+        result
     }
 
     /**

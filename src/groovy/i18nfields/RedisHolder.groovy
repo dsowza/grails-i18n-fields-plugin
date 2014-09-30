@@ -17,16 +17,22 @@ class RedisHolder {
     private static final Logger log = LoggerFactory.getLogger(this)
     private static JedisPool pool = null
 
+    public static def withJedis(Closure closure) {
+        def jedis = jedisPool.getResource()
+        closure.call(jedis)
+        jedisPool.returnResourceObject(jedis)
+    }
+
     /**
-     * Get the redisInstance to be used.
+     * Get the jedisPool to be used.
      * @return
      */
-    public static Jedis getInstance() {
+    private static JedisPool getJedisPool() {
         if (!pool) {
             def config = getConfiguration()
             def poolConfig = new GenericObjectPoolConfig()
 
-            poolConfig.setMaxTotal(config?.pool?.maxTotal ?: 64)
+            poolConfig.setMaxTotal(config?.pool?.maxTotal ?: 128)
 
             // if we have a timeout, use timeout constuctor
             if (configuration.timeout) {
@@ -37,7 +43,7 @@ class RedisHolder {
 
             log.info "Jedis pool created with config: $config"
         }
-        return pool.getResource()
+        pool
     }
 
     private static def getSpringBean(String name) {
