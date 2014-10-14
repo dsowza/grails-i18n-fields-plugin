@@ -18,9 +18,26 @@ class RedisHolder {
     private static JedisPool pool = null
 
     public static def withJedis(Closure closure) {
-        def jedis = jedisPool.getResource()
-        closure.call(jedis)
-        jedisPool.returnResourceObject(jedis)
+        def jedis
+        try {
+            def started = System.currentTimeMillis()
+            jedis = jedisPool.getResource()
+            if (!jedis) {
+                log.warn "[i18n-fields] Jedis pool did not return jedis connection"
+            }
+            def resourceObtained = System.currentTimeMillis()
+            closure.call(jedis)
+            def finished = System.currentTimeMillis()
+
+            if (finished - started > 25) {
+                log.warn "[i18n-fields] Slow redis query ${ finished - started }ms "
+                    + "(${ resourceObtained - started }ms to obtain connection)"
+            }
+        } catch (Exception ex) {
+            log.error "[i18n-fields] Error in withJedis ${ ex }"
+        } finally {
+            jedisPool.returnResourceObject(jedis)
+        }
     }
 
     /**
@@ -32,16 +49,13 @@ class RedisHolder {
             def config = getConfiguration()
             def poolConfig = new GenericObjectPoolConfig()
 
-            poolConfig.setMaxTotal(config?.pool?.maxTotal ?: 128)
+            poolConfig.setMaxTotal(config.pool?.maxTotal ?: 64)
+            poolConfig.setMaxWaitMillis(config.pool?.maxWaitMillis ?: 500)
 
-            // if we have a timeout, use timeout constuctor
-            if (configuration.timeout) {
-                pool = new JedisPool(poolConfig, config.host, config.port, config.timeout)
-            } else {
-                pool = new JedisPool(poolConfig, config.host, config.port)
-            }
+            pool = new JedisPool(poolConfig, config.host, config.port,
+                                 config.timeout ?: 500)
 
-            log.info "Jedis pool created with config: $config"
+            log.info "[i18n-fields] Jedis pool created with config: $config"
         }
         pool
     }
