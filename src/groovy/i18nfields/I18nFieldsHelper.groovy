@@ -250,7 +250,7 @@ class I18nFieldsHelper implements Serializable {
         def className = object.class.simpleName.toLowerCase()
 
         def keyName = "${locale}:${className}:${objectId}"
-        def result
+        def result = [:]
         RedisHolder.withJedis { jedis ->
             result = jedis.hgetAll(keyName)
         }

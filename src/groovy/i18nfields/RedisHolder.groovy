@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisPool
+import redis.clients.jedis.exceptions.JedisConnectionException
 
 /**
  * Keeps a Redis instance to be used with i18nFields.
@@ -20,23 +21,23 @@ class RedisHolder {
     public static def withJedis(Closure closure) {
         def jedis
         try {
-            def started = System.currentTimeMillis()
             jedis = jedisPool.getResource()
-            if (!jedis) {
-                log.warn "[i18n-fields] Jedis pool did not return jedis connection"
-            }
-            def resourceObtained = System.currentTimeMillis()
             closure.call(jedis)
-            def finished = System.currentTimeMillis()
 
-            if (finished - started > 25) {
-                log.warn "[i18n-fields] Slow redis query ${ finished - started }ms "
-                    + "(${ resourceObtained - started }ms to obtain connection)"
+        } catch (JedisConnectionException ex) {
+            if (jedis) {
+                jedisPool.returnBrokenResource(jedis)
+                jedis = null
             }
+            log.warn "[i18n-fields] Jedis Connection Exception ${ ex }"
+
         } catch (Exception ex) {
             log.error "[i18n-fields] Error in withJedis ${ ex }"
+
         } finally {
-            jedisPool.returnResourceObject(jedis)
+            if (jedis) {
+              jedisPool.returnResource(jedis)
+            }
         }
     }
 
@@ -51,6 +52,10 @@ class RedisHolder {
 
             poolConfig.setMaxTotal(config.pool?.maxTotal ?: 64)
             poolConfig.setMaxWaitMillis(config.pool?.maxWaitMillis ?: 500)
+
+            poolConfig.setTestOnBorrow(true)
+            poolConfig.setTestOnReturn(true)
+            poolConfig.setTestWhileIdle(true)
 
             pool = new JedisPool(poolConfig, config.host, config.port,
                                  config.timeout ?: 500)
