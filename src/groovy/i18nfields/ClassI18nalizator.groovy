@@ -245,13 +245,6 @@ class ClassI18nalizator {
         addPropertySetter(name, locale)
     }
 
-    private def buildSetterMethod(field, locale) {
-        astBuilder.buildFromString("""
-          i18nfields.I18nFieldsHelper.setValue(this, "$field", "$locale", value)
-          return
-        """).pop()
-    }
-
     private boolean hasConstraints(field) {
         return hasConstraints() && null != getConstraints(field)
     }
@@ -324,9 +317,9 @@ class ClassI18nalizator {
 
     private addPropertyGetter(field, locale) {
         String methodName = GrailsClassUtils.getGetterName("${field}_${locale}")
-        def code = new AstBuilder().buildFromString("""
-            i18nfields.I18nFieldsHelper.getValueOrDefault(this, "$field", "$locale")
-        """).pop()
+        def code = astBuilder.buildFromString(
+            "i18nFieldsHelper.getValueOrDefault(this, '$field', '$locale')"
+        ).pop()
 
         def methodNode = new MethodNode(
             methodName,
@@ -340,15 +333,18 @@ class ClassI18nalizator {
     }
 
     private addPropertySetter(field, locale) {
-        String methodName = GrailsClassUtils.getSetterName("${field}_${locale}");
-        def params = new Parameter[1]
+        String methodName = GrailsClassUtils.getSetterName("${field}_${locale}")
+        def code = astBuilder.buildFromString(
+          "i18nfields.I18nFieldsHelper.setValue(this, '$field', '$locale', value)"
+        ).first()
+
         def methodNode = new MethodNode(
             methodName,
             ACC_PUBLIC,
-            ClassHelper.VOID_TYPE,
+            ClassHelper.OBJECT_TYPE,
             [new Parameter(ClassHelper.STRING_TYPE, "value")] as Parameter[],
             ClassHelper.EMPTY_TYPE_ARRAY,
-            buildSetterMethod(field, locale)
+            code
         );
         classNode.addMethod(methodNode)
     }
@@ -367,9 +363,9 @@ class ClassI18nalizator {
      */
     private addProxyGetter(field) {
         String methodName = GrailsClassUtils.getGetterName(field);
-        def code = new AstBuilder().buildFromString("""
-            i18nfields.I18nFieldsHelper.getValueOrDefault(this, "$field")
-        """).pop();
+        def code = new AstBuilder().buildFromString(
+            "i18nfields.I18nFieldsHelper.getValueOrDefault(this, '$field')"
+        ).first();
 
         def methodNode = new MethodNode(
             methodName,
@@ -385,9 +381,9 @@ class ClassI18nalizator {
 
     private addLocalizedGetter(field) {
         def methodName = GrailsClassUtils.getGetterName(field)
-        def code = new AstBuilder().buildFromString("""
-            i18nfields.I18nFieldsHelper.getValueOrDefault(this, "$field", locale)
-        """).pop();
+        def code = new AstBuilder().buildFromString(
+            "i18nfields.I18nFieldsHelper.getValueOrDefault(this, '$field', locale)"
+        ).first();
 
         def parameters = [new Parameter(ClassHelper.make(Locale, false), "locale")] as Parameter[]
 
@@ -405,9 +401,9 @@ class ClassI18nalizator {
 
     private addLocalizedGetterEmpty(field) {
         def methodName = GrailsClassUtils.getGetterName(field) + "OrEmpty"
-        def code = new AstBuilder().buildFromString("""
-            i18nfields.I18nFieldsHelper.getValueOrEmpty(this, "$field", locale)
-        """).pop();
+        def code = new AstBuilder().buildFromString(
+            "i18nfields.I18nFieldsHelper.getValueOrEmpty(this, '$field', locale)"
+        ).first();
 
         def parameters = [new Parameter(ClassHelper.make(Locale, false), "locale")] as Parameter[]
 
