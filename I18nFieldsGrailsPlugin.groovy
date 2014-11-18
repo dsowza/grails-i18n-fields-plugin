@@ -6,11 +6,12 @@ import i18nfields.*
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.orm.hibernate.HibernateEventListeners
 import org.hibernate.event.PostInsertEvent
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 class I18nFieldsGrailsPlugin {
     static final Logger log = LoggerFactory.getLogger(this)
 
-    def version = "1.0.3"
+    def version = "1.1.0"
     def grailsVersion = "2.1.0 > *"
     def pluginExcludes = [
             "lib/*",
@@ -30,6 +31,7 @@ class I18nFieldsGrailsPlugin {
     def dependsOn = [:]
 
     def config = ConfigurationHolder.config
+    def locales = config."${ I18nFields.I18N_FIELDS }"?."${ I18nFields.LOCALES }"
 
     def author = "Jorge Uriarte"
     def authorEmail = "jorge.uriarte@omelas.net"
@@ -41,6 +43,30 @@ class I18nFieldsGrailsPlugin {
     def setApplication(app) {
         log.info "Grails Application injected"
         grailsApplication = app
+    }
+
+    def addLocalizedProperties(clzz, field, locales) {
+        def proxyGetter = GrailsClassUtils.getGetterName(field)
+        clzz.metaClass."$proxyGetter" = {
+            i18nfields.I18nFieldsHelper.getValueOrDefault(delegate, field)
+        }
+
+        def getterWithLocale = GrailsClassUtils.getGetterName("${ field }OrEmpty")
+        clzz.metaClass."$getterWithLocale" = { locale ->
+            i18nfields.I18nFieldsHelper.getValueOrEmpty(delegate, field, locale)
+        }
+
+        locales.each { locale ->
+            log.info "Adding virtual getters and setters for $clzz ($field, $locale)"
+            def getter = GrailsClassUtils.getGetterName("${field}_${locale}")
+            def setter = GrailsClassUtils.getSetterName("${field}_${locale}")
+            clzz.metaClass."$getter" = {
+                i18nfields.I18nFieldsHelper.getValueOrDefault(delegate, field, locale)
+            }
+            clzz.metaClass."$setter" = { value ->
+                i18nfields.I18nFieldsHelper.setValue(delegate, field, locale, value)
+            }
+        }
     }
 
     def doWithDynamicMethods = { context ->
@@ -57,6 +83,25 @@ class I18nFieldsGrailsPlugin {
                 theClass.metaClass.saveLocale = I18nFieldsHelper.saveLocale
             }
         }
+
+        application.domainClasses.each { domainClass ->
+            //if (!domainClass.getClazz().hasProperty(I18nFields.I18N_FIELDS))
+            //    return
+
+            def fields
+            try {
+                fields = domainClass.getClazz()."${ I18nFields.I18N_FIELDS }"
+            } catch (Exception ex) {
+                return
+            }
+
+            if (fields && locales) {
+                fields.each { field ->
+                    addLocalizedProperties(domainClass, field, locales)
+                }
+            }
+        }
+
         i18nfields.I18nFieldsHelper.metaClass.getApplicationContext = { -> context }
     }
 

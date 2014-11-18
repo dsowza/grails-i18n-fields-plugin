@@ -1,15 +1,17 @@
 package demobinding
 
-@i18nfields.I18nFields
+import i18nfields.Translatable
+
+@Mixin(Translatable)
 class Demo {
     String code
-    String name
-    String description
-    String longDescription
+    String name_es_ES
+    String description_es_ES
+    String longDescription_es_ES
 
     static constraints = {
         code unique: true
-        name blank: false
+        name_es_ES blank: false
     }
 
     static i18nFields = ['name', 'description', 'longDescription']

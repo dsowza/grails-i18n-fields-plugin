@@ -121,7 +121,8 @@ class I18nFieldsHelper implements Serializable {
         locale = getSupportedLocale(locale) // use a near locale if locale do not exists.
 
         def isRedisLocale =  config[I18nFields.REDIS_LOCALES].contains(locale)
-        if(!isRedisLocale) return object.@"${field}_${locale}"
+        if (!isRedisLocale)
+            return object.@"${field}_${locale}"
 
         try {
             populateCache(object, locale) // can throw exception
@@ -130,7 +131,7 @@ class I18nFieldsHelper implements Serializable {
             log.debug "Error retrieving redis value. Field ${field}, Locale: ${locale}"
         }
 
-        return object.@"${field}_${locale}"
+        return object.i18nFieldValues."${field}_${locale}"
     }
 
 
@@ -153,7 +154,10 @@ class I18nFieldsHelper implements Serializable {
 
         // If requested locale is in redis, save in cache and mark object as dirty
         // if it is not, then use the field directly.
-        object.@"${field}_${locale}" = value
+        object.i18nFieldValues."${field}_${locale}" = value
+        try {
+            object.@"${field}_${locale}" = value
+        } catch(Exception ex) { /* TODO: Remove this try catch */ }
     }
 
     /**
@@ -185,7 +189,7 @@ class I18nFieldsHelper implements Serializable {
         // Gather values to persist.
         def values = [:]
         object[I18nFields.I18N_FIELDS].each { key ->
-            def value = object.@"${key}_${locale}"
+            def value = object.i18nFieldValues."${key}_${locale}"
             if (value != null)
                 if (object.hasProperty(I18nFields.I18N_FIELDS_RENAME))
                     values[object[I18nFields.I18N_FIELDS_RENAME][key]?:key] = value
@@ -300,7 +304,7 @@ class I18nFieldsHelper implements Serializable {
         object[I18nFields.DATA][locale] = values
         values.each { value ->
             if (object.hasProperty("${value.key}_${locale}"))
-                object.@"${value.key}_${locale}" = value.value
+                object.i18nFieldValues."${value.key}_${locale}" = value.value
         }
     }
 
