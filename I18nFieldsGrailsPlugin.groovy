@@ -11,6 +11,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
 class I18nFieldsGrailsPlugin {
     static final Logger log = LoggerFactory.getLogger(this)
 
+    def groupId = "com.ticketbis"
     def version = "1.1.0"
     def grailsVersion = "2.1.0 > *"
     def pluginExcludes = [
