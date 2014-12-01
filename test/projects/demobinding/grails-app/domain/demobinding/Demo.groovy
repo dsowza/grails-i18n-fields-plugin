@@ -1,9 +1,11 @@
 package demobinding
 
-import i18nfields.Translatable
+//import i18nfields.Translatable
 
-@Mixin(Translatable)
+//@Mixin(Translatable)
 class Demo {
+    public i18nFieldInfo = [:]
+
     String code
     String name_es_ES
     String description_es_ES
