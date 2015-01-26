@@ -54,6 +54,7 @@ class ClassI18nalizator {
         this.locales = locales
         this.redisLocales = redisLocales
         this.constraintsEnforce = constraintsEnforce
+        println "Adding i18n fields to ${ classNode.name } (${ locales.size() } locales; redis: ${ redisLocales.size() })"
     }
 
     /**
