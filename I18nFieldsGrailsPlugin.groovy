@@ -6,11 +6,12 @@ import i18nfields.*
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.orm.hibernate.HibernateEventListeners
 import org.hibernate.event.PostInsertEvent
+import grails.util.Holders
 
 class I18nFieldsGrailsPlugin {
     static final Logger log = LoggerFactory.getLogger(this)
 
-    def version = "1.0.4"
+    def version = "1.0.5"
     def grailsVersion = "2.1.0 > *"
     def pluginExcludes = [
             "lib/*",
@@ -28,8 +29,6 @@ class I18nFieldsGrailsPlugin {
             "web-app/js/prototype/*",
     ]
     def dependsOn = [:]
-
-    def config = ConfigurationHolder.config
 
     def author = "Jorge Uriarte"
     def authorEmail = "jorge.uriarte@omelas.net"
