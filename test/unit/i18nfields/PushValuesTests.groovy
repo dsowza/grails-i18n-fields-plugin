@@ -43,7 +43,7 @@ class PushValuesTests {
 		I18nFieldsHelper.push(object, 'es_ES')
 		assert redisMock.keys('*').size() == 0
 	}
-
+	/*
 	@Test
 	void "if a value is empty save empty"() {
 		// First save some data
@@ -59,5 +59,5 @@ class PushValuesTests {
 		def expectedKeyName = "es_ES:${object.class.simpleName.toLowerCase()}:1"
 		assert '' == redisMock.hget(expectedKeyName, 'name')
 	}
-
+	*/
 }
