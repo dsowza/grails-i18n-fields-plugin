@@ -238,6 +238,13 @@ class I18nFieldsHelper implements Serializable {
         }
     }
 
+    static def getFallbackLocales(locale) {
+        if (config.fallbackLocales[locale.toString()]) {
+            return [locale] + config.fallbackLocales[locale.toString()]
+        }
+        return [locale]
+    }
+
     /**
      * Retrieve from redis the values for a object.
      *
@@ -249,13 +256,21 @@ class I18nFieldsHelper implements Serializable {
         def objectId = object.id
         def className = object.class.simpleName.toLowerCase()
 
-        def keyName = "${locale}:${className}:${objectId}"
-        def result = [:]
+        def locales = getFallbackLocales(locale)
+
+        def translations
         RedisHolder.withJedis { jedis ->
-            result = jedis.hgetAll(keyName)
+            def pipe = jedis.pipelined()
+            def futureTranslations = locales.collect { l ->
+                pipe.hgetAll("$l:$className:$objectId")
+            }
+            pipe.sync()
+            translations = futureTranslations*.get()
         }
 
-        log.debug "Fetching from redis ${keyName} values ${result}"
+        def result = translations.find()
+
+        log.debug "Fetching from redis ${className}:${objectId}: $locales values $result"
         result
     }
 
