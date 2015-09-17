@@ -268,7 +268,12 @@ class I18nFieldsHelper implements Serializable {
             translations = futureTranslations*.get()
         }
 
-        def result = translations.find()
+        def result
+        if (config.transform[className]) {
+            result = config.transform[className](translations, locales)
+        } else {
+            result = translations.find()
+        }
 
         log.debug "Fetching from redis ${className}:${objectId}: $locales values $result"
         result
