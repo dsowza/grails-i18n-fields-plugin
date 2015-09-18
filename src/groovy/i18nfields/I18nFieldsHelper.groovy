@@ -93,7 +93,7 @@ class I18nFieldsHelper implements Serializable {
      * @returns field value
      */
     static String getValueOrDefault( object, field, locale ) {
-        def result = getValueOrEmpty(object, field, locale)
+        def result = getValueOrEmpty(object, field, locale, true)
         if(!result) {
             def defaultLocale = config[I18nFields.DEFAULT_LOCALE]
             result = getValueOrEmpty(object, field, defaultLocale)
@@ -113,7 +113,7 @@ class I18nFieldsHelper implements Serializable {
      *
      * @returns field value
      */
-    static String getValueOrEmpty( object, field, locale ) {
+    static String getValueOrEmpty( object, field, locale, inherit = false) {
         assert object != null, "object to retrieve value should never be null"
         assert locale != null, "the locale to retrieve is mandatory"
 
@@ -124,7 +124,7 @@ class I18nFieldsHelper implements Serializable {
         if(!isRedisLocale) return object.@"${field}_${locale}"
 
         try {
-            populateCache(object, locale) // can throw exception
+            populateCache(object, locale, inherit) // can throw exception
         }
         catch(Exception e) {
             log.debug "Error retrieving redis value. Field ${field}, Locale: ${locale}"
@@ -249,11 +249,11 @@ class I18nFieldsHelper implements Serializable {
      * @param locale locale for the values to retrieve.
      * @return map with values.
      */
-    static def fetch(object, locale) {
+    static def fetch(object, locale, inherit = true) {
         def objectId = object.id
         def className = object.class.simpleName.toLowerCase()
 
-        def locales = getFallbackLocales(locale)
+        def locales = inherit ? getFallbackLocales(locale) : [locale]
 
         def translations
         RedisHolder.withJedis { jedis ->
@@ -282,11 +282,11 @@ class I18nFieldsHelper implements Serializable {
      * @param locale locale to retrieve.
      * @return map with values.
      */
-    static def getRedisValues(object, locale) {
+    static def getRedisValues(object, locale, inherit = true) {
         def grailsToRedis = object.hasProperty(I18nFields.I18N_FIELDS_RENAME) ? object[I18nFields.I18N_FIELDS_RENAME] : [:]
         def redisToGrails = grailsToRedis.collectEntries { key, value -> [(value), key]}
 
-        def values = fetch(object, locale).collectEntries { keyRedis, valueRedis ->
+        def values = fetch(object, locale, inherit).collectEntries { keyRedis, valueRedis ->
             if( redisToGrails.containsKey(keyRedis) ) {
                 return [ (redisToGrails[keyRedis]) : valueRedis ]
             }
@@ -304,11 +304,11 @@ class I18nFieldsHelper implements Serializable {
      * @param locale locale to fill
      * @return
      */
-    static def populateCache(object, locale) {
+    static def populateCache(object, locale, inherit = true) {
         def origin = object[I18nFields.DATA][locale]
         if(origin != null) return;
 
-        def values = getRedisValues(object, locale)
+        def values = getRedisValues(object, locale, inherit)
         if(!values) {
             object[I18nFields.DATA][locale] = []
             throw new Exception("Redis value not found.")
