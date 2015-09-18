@@ -239,10 +239,7 @@ class I18nFieldsHelper implements Serializable {
     }
 
     static def getFallbackLocales(locale) {
-        if (config.fallbackLocales[locale.toString()]) {
-            return [locale] + config.fallbackLocales[locale.toString()]
-        }
-        return [locale]
+        config.fallbackLocales[locale.toString()] ?: [locale]
     }
 
     /**
