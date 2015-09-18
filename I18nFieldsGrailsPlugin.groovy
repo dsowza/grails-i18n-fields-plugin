@@ -11,9 +11,9 @@ import grails.util.Holders
 class I18nFieldsGrailsPlugin {
     static final Logger log = LoggerFactory.getLogger(this)
 
-    def version = "1.0.5"
+    def version = "1.0.6"
     def groupId = "com.ticketbis"
-    def grailsVersion = "2.1.0 > *"
+    def grailsVersion = "2.4.0 > *"
     def pluginExcludes = [
             "lib/*",
             "grails-app/i18n/*",
