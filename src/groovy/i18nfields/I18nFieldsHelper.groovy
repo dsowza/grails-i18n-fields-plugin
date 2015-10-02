@@ -93,13 +93,7 @@ class I18nFieldsHelper implements Serializable {
      * @returns field value
      */
     static String getValueOrDefault( object, field, locale ) {
-        def result = getValueOrEmpty(object, field, locale, true)
-        if(!result) {
-            def defaultLocale = config[I18nFields.DEFAULT_LOCALE]
-            result = getValueOrEmpty(object, field, defaultLocale)
-        }
-
-        return result
+        return getValueOrEmpty(object, field, locale, true)
     }
 
     /**
@@ -269,7 +263,8 @@ class I18nFieldsHelper implements Serializable {
         if (config.transform[className]) {
             result = config.transform[className](translations, locales)
         } else {
-            result = translations.find()
+            result = [:]
+            translations.reverse().each { if (it) result << it }
         }
 
         log.debug "Fetching from redis ${className}:${objectId}: $locales values $result"
