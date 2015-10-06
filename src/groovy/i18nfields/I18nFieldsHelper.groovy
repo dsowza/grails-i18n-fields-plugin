@@ -93,7 +93,12 @@ class I18nFieldsHelper implements Serializable {
      * @returns field value
      */
     static String getValueOrDefault( object, field, locale ) {
-        return getValueOrEmpty(object, field, locale, true)
+        def result = getValueOrEmpty(object, field, locale, true)
+        if(!result) {
+            def defaultLocale = config[I18nFields.DEFAULT_LOCALE]
+            result = getValueOrEmpty(object, field, defaultLocale)
+        }
+        return result
     }
 
     /**
