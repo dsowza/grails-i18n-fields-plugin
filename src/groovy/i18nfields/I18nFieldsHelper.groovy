@@ -93,12 +93,7 @@ class I18nFieldsHelper implements Serializable {
      * @returns field value
      */
     static String getValueOrDefault( object, field, locale ) {
-        def result = getValueOrEmpty(object, field, locale, true)
-        if(!result) {
-            def defaultLocale = config[I18nFields.DEFAULT_LOCALE]
-            result = getValueOrEmpty(object, field, defaultLocale)
-        }
-        return result
+        return getValueOrEmpty(object, field, locale, true)
     }
 
     /**
@@ -254,7 +249,7 @@ class I18nFieldsHelper implements Serializable {
 
         def locales = inherit ? getFallbackLocales(locale) : [locale]
 
-        def translations
+        def translations = []
         RedisHolder.withJedis { jedis ->
             def pipe = jedis.pipelined()
             def futureTranslations = locales.collect { l ->
@@ -262,6 +257,19 @@ class I18nFieldsHelper implements Serializable {
             }
             pipe.sync()
             translations = futureTranslations*.get()
+        }
+
+        // gets default from db
+        def defaultValue = [:]
+        if (inherit) {
+            def defaultLocale = config[I18nFields.DEFAULT_LOCALE]
+            object[I18nFields.I18N_FIELDS].each { key ->
+                def value = object.@"${key}_${defaultLocale}"
+                if (value != null) {
+                    defaultValue[key] = value
+                }
+            }
+            translations << defaultValue
         }
 
         def result
