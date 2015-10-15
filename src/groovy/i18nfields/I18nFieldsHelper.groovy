@@ -277,7 +277,7 @@ class I18nFieldsHelper implements Serializable {
             result = config.transform[className](translations, locales)
         } else {
             result = [:]
-            translations.reverse().each { if (it) result << it }
+            translations.reverse().each { if (it) result << it.findAll{k,v -> v} }
         }
 
         log.debug "Fetching from redis ${className}:${objectId}: $locales values $result"
