@@ -266,7 +266,10 @@ class I18nFieldsHelper implements Serializable {
             object[I18nFields.I18N_FIELDS].each { key ->
                 def value = object.@"${key}_${defaultLocale}"
                 if (value != null) {
-                    defaultValue[key] = value
+                    if (object.hasProperty(I18nFields.I18N_FIELDS_RENAME))
+                        defaultValue[object[I18nFields.I18N_FIELDS_RENAME][key]?:key] = value
+                    else
+                        defaultValue[key] = value
                 }
             }
             translations << defaultValue
